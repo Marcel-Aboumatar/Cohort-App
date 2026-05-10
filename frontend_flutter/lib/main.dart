@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Cohort',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -29,8 +31,13 @@ class MyApp extends StatelessWidget {
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: Colors.blue, // Sets cursor color globally
+          selectionColor: Colors.blueAccent, // Color of highlighted text
+          selectionHandleColor: Colors.blue, // Color of selection bubbles
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Cohort'),
     );
   }
 }
@@ -54,17 +61,64 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool _isHidden = true;
+  bool loggedIn = false;
+  bool loginError = false;
+  String resultText = '';
+  var classes = ['class1', 'class2'];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+
+  Future<void> logIn(String username, String password) async {
+    final url = Uri.parse('http://127.0.0.1:5000/login');
+
+    final response = await http.post(
+      url,
+      body: {
+        'username': username,
+        'password': password,
+      }
+    ).timeout(const Duration(seconds: 10));
+
+    print('username: $username');
+    print('pass: $password');
+
+    if (response.statusCode == 200) { //got a response
+      //TODO: Check the response body to see if we actually logged in
+      print(response.body);
+      setState(() {
+        loggedIn = true;
+        loginError = false;
+      });
+    } else { //Error code bad request
+      print('Error: ${response.statusCode}');
+      setState(() {
+        loginError = true;
+        loggedIn = false;
+      });
+    }
+  }
+
+  Future<void> signUp(String username, String password) async {
+    final url = Uri.parse('http://127.0.0.1:5000/signup');
+
+    final response = await http.post(
+      url,
+      body: {
+        'username': username,
+        'password': password,
+      }
+    ).timeout(const Duration(seconds: 10));
+
+    print('username: $username');
+    print('pass: $password');
+
+    if (response.statusCode == 200) { //got a response
+      print(response.body);
+    } else { //could not log in
+      print('Error: ${response.statusCode}');
+    }
   }
 
   @override
@@ -80,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
         // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.amber,//Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
@@ -104,19 +158,180 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            const Text('Login'),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 60,
+              width: 400,
+              child: TextField(
+                controller: userNameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                ),
+              ),
             ),
+            
+            const SizedBox(height: 20),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 60,
+                  width: 400,
+                  child:             TextField(
+                    obscureText: _isHidden,
+                    enableSuggestions: false,
+                    autocorrect: false,
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                      icon: Icon(
+                        _isHidden ? Icons.visibility_off : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        // Updates the UI instantly
+                        setState(() {
+                          _isHidden = !_isHidden;
+                        });
+                      },
+                    ),
+                    ),
+                  ),
+                ),
+                
+            ],),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue, // Button color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                final username = userNameController.text;
+                final password = passwordController.text; //Login
+                logIn(username, password);
+              },
+              child: const Text('Login'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue, // Button color
+                foregroundColor: Colors.white, // Text color
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                final username = userNameController.text;
+                final password = passwordController.text; //Login
+                signUp(username, password);
+              },
+              child: const Text('Sign up'),
+            ),
+            Visibility(
+              visible: loggedIn,
+              child: Text("Logged in"),
+            ),
+            Visibility(
+              visible: loginError,
+              child: Text("Error with credentials"),
+            ),
+
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            );
+          },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
+      body:  Center(
+        child: Column(
+          children: [
+            Text('Home'),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MyHomePage(title: "Cohort"),
+                  ),
+                );
+              },
+              child: const Text('Click Me'),
+            ),
+            Text('Profile Page'),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const tempScreen(),
+                  ),
+                );
+              },
+              child: const Text('Click Me'),
+            ),
+          ]
+        )
+        
+      ),
+    );
+  }
+}
+
+class tempScreen extends StatelessWidget {
+  const tempScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Temp 2'),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            Text('test2'),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileScreen(),
+                  ),
+                );
+              },
+              child: const Text('Click Me'),
+            ),
+          ]
+        )
+        
+      ),
     );
   }
 }

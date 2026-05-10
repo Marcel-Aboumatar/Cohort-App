@@ -67,3 +67,23 @@ def convert_courses(raw_courses):
         formatted.append(new_course)
 
     return formatted
+
+
+def load_sample_schedule(email:str, course_list:list):
+    #load the database
+    load_dotenv()
+    DATABASE_URI = os.getenv("DATABASE_URI")
+
+    client = MongoClient(DATABASE_URI, server_api=ServerApi('1'))
+    database = client["user_database"]
+    collection = database["users"]
+
+    formated_courses = course_list
+    
+    collection.update_one(
+        {"email": email},
+        {"$set": {"courses": formated_courses}}
+    )
+    
+    client.close()
+    return Status.SUCCESS

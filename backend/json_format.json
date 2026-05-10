@@ -24,20 +24,6 @@
           "starttime": "10:00AM",
           "endtime": "11:20AM",
           "course_duration": "1/5/2026 - 4/21/2026"
-        },
-        {
-          "type": "LAB",
-          "location": "LA, 204",
-          "days": [0,0,0,1,0,0,0],
-          "time": "4:30 - 5:20",
-          "course_duration": "  1/5/2026 - 4/21/2026"
-        },
-        {
-          "type": "EXAM",
-          "location": "AC, 122A",
-          "days": [0,0,0,0,0,0,1],
-          "time": "2:30 - 4:30",
-          "course_duration": "4/11/2026 - 4/11/2026"
         }
       ],
       "instructor": "Kotseruba, I"
