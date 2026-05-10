@@ -8,8 +8,19 @@ from dotenv import load_dotenv
 import os
 
 app = Flask(__name__)
-CORS(app)
 
+
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = True
+
+CORS(
+    app,
+    supports_credentials=True,
+    origins=[
+        r"http://localhost:\d+",
+        r"http://127.0.0.1:\d+",
+    ]
+)
 load_dotenv()
 app.secret_key = os.getenv("SECRET_KEY")
 
@@ -54,11 +65,6 @@ def signup():
 
 @app.route("/login", methods=["POST"])
 def login():
-
-    if session.get("email"):
-        return jsonify({
-            "success": True,
-        }), 200
 
     email = request.form.get("email")
     password = request.form.get("password")
@@ -114,6 +120,8 @@ def delete_user():
 @app.route("/get_user_info", methods=["POST"])
 def get_user_info():
     email = session.get("email")
+
+    print(session)
 
     if email is None:
         return jsonify({
@@ -385,7 +393,23 @@ def find_random_in_shared_class():
         "friends": friends
     }), 200
 
+@app.route("/load_schedule", methods=["POST"])
+def load_schedule():
+    
+    email = session.get("email")
+
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result = f.load_schedule(email)
+
+    return jsonify({
+        "success": True,
+    }), 200
 
 
 if __name__ == "__main__":
-    app.run(host="localhost", port=8001, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

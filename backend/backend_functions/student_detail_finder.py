@@ -29,7 +29,7 @@ async def course_output_formatter(page1, i):
     status = await page1.locator(".esg-table-body__td").nth(0).inner_text()
     
     title = await row_locator.locator(".esg-table-body__td").nth(1).inner_text()
-    code, name = str(title).split(": ")
+    code, name = str(title).split(": ", maxsplit=1)
     
     credits = await row_locator.locator(".esg-table-body__td").nth(2).inner_text()
     credits = str(credits[:4]).split()[0]
@@ -89,4 +89,6 @@ async def main():
             dict_values = await course_output_formatter(page1, i)
             outputs.append(dict_values)
         return outputs
-asyncio.run(main())
+    
+def run_playwright():
+    return asyncio.run(main())

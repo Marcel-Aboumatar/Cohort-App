@@ -182,4 +182,4 @@ def get_all_friend_requests(email:str):
         return Status.INVALID_EMAIL, None
 
     client.close()
-    return Status.SUCCESS, user.get("incoming_friend_requests")
+    return Status.SUCCESS, user.get("friend_requests")

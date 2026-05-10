@@ -6,3 +6,4 @@ from .query_user import query_user, query_private_user
 from .update_user import update_user
 from .find_shared_classes import find_friends_in_shared_class
 from .find_random_in_shared_class import find_random_in_shared_class
+from .load_schedule import load_schedule

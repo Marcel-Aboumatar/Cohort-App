@@ -45,6 +45,9 @@ def find_random_in_shared_class(email:str, num:int):
         if shared:
             result.append({
                 "username": user.get("username"),
+                "email": user.get("email"),
+                "age": user.get("age"),
+                "major": user.get("major"),
                 "shared_courses": shared
             })
 
