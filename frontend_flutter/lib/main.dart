@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+
+final dio = Dio(
+  BaseOptions(
+    baseUrl: "http://127.0.0.1:5000",
+    connectTimeout: Duration(seconds: 10),
+    receiveTimeout: Duration(seconds: 10),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  ),
+);
 
 void main() {
   runApp(const MyApp());
@@ -12,25 +24,21 @@ Future<bool> logIn(String email, String password) async {
   print('email: $email');
   print('pass: $password');
 
-  final response = await http.post(
-    url,
-    body: {
-      'email': email,
-      'password': password,
-    }
-  ).timeout(const Duration(seconds: 10));
 
+  final response = await dio.post(
+    "/login",
+    data: FormData.fromMap({
+      "email": email,
+      "password": password,
+    }),
+  );
   
 
-  print(response.body);
+  print(response.data);
   if (response.statusCode == 200) { //got a response
     //TODO: Check the response body to see if we actually logged in
+    print("success");
     return true;
-    
-    // setState(() {
-    //   loggedIn = true;
-    //   loginError = false;
-    // });
     
   } else { //401 - unauthorized
     print('Error: ${response.statusCode}');
@@ -54,8 +62,8 @@ Future<void> deleteUser(String email) async{
     return;
   }
 }
-
-Future<void> signUp(String username, String age, String major, String email, String password, String discoverable) async {
+//return if succeeded
+Future<bool> signUp(String username, String age, String major, String email, String password, String discoverable) async {
   final url = Uri.parse('http://127.0.0.1:5000/signup');
   print('username: $username');
   print('email: $email');
@@ -78,8 +86,10 @@ Future<void> signUp(String username, String age, String major, String email, Str
 
   if (response.statusCode == 200) { //got a response
     print(response.body);
+    return true;
   } else { //could not log in
     print('Error: ${response.statusCode}');
+    return false;
   }
 }
 
@@ -121,7 +131,7 @@ Future<void> getPrivateUserInfo(String email) async{
   }
 }
 //we are email_sender
-Future<void> sendFriendRequest(String email_sender, String email_receiver) async{
+Future<bool> sendFriendRequest(String email_sender, String email_receiver) async{
   final url = Uri.parse('http://127.0.0.1:5000/send_friend_request');
 
   final response = await http.post(
@@ -131,6 +141,14 @@ Future<void> sendFriendRequest(String email_sender, String email_receiver) async
       'email_receiver':email_receiver,
     }
   ).timeout(const Duration(seconds: 10));
+  if(response.statusCode == 200){
+    print(response.body);
+    return true;
+  }
+  else{
+    print("Error: ${response.statusCode}");
+    return false;
+  }
 }
 //we are email_receiver
 Future<void> acceptFriendRequest(String email_sender, String email_receiver) async{
@@ -158,7 +176,7 @@ Future<void> declineFriendRequest(String email_sender, String email_receiver) as
 }
 
 //it doesn't matter what is which but we're user
-Future<void> removeFriend(String email_user, String email_friend) async{
+Future<bool> removeFriend(String email_user, String email_friend) async{
   final url = Uri.parse('http://127.0.0.1:5000/remove_friend');
 
   final response = await http.post(
@@ -168,9 +186,17 @@ Future<void> removeFriend(String email_user, String email_friend) async{
       'email_friend':email_friend,
       }
   ).timeout(const Duration(seconds: 10));
+  if(response.statusCode == 200){
+    print(response.body);
+    return true;
+  }
+  else{
+    print("Error: ${response.statusCode}");
+    return false;
+  }
 }
 
-Future<void> updateUser(String email, String username, String major, String age, String private) async{
+Future<bool> updateUser(String email, String username, String major, String age, String private) async{
   final url = Uri.parse('http://127.0.0.1:5000/update_user');
 
   final response = await http.post(
@@ -183,6 +209,14 @@ Future<void> updateUser(String email, String username, String major, String age,
       'new_private_bool':private,
       }
   ).timeout(const Duration(seconds: 10));
+  if(response.statusCode == 200){
+    print(response.body);
+    return true;
+  }
+  else{
+    print("Error: ${response.statusCode}");
+    return false;
+  }
 }
 
 Future<void> getAllFriends(String email) async{
@@ -389,7 +423,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 final username = userNameController.text;
                 final password = passwordController.text; //Login
-                logIn(username, password);
+                localLogIn(username, password);
               },
               child: const Text('Login'),
             ),
@@ -493,7 +527,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               onPressed: () {
                 final username = "temp@gmail.com";
-                getPrivateUserInfo(username);
+                getUserInfo(username);
               },
               child: const Text('Get info'),
             ),
