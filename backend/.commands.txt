@@ -8,3 +8,4 @@ pip freeze > requirements.txt
 
 
 
+ngrok http 5000 --domain=unattired-jackson-undaughterly.ngrok-free.dev
