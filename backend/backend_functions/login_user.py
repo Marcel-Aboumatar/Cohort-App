@@ -22,29 +22,24 @@ def login_user(email:str, password:str):
     database = client["user_database"]
     collection = database["users"]
 
-    #get all users from database
-    all_users = [user for user in collection.find()]
+    user = collection.find_one({"email": email})
 
-    for user in all_users:
-
-        if not(user.get("email") == email):
-            continue
-
-        password_inputed_hash = hashlib.sha256((password + user.get("salt")).encode('utf-8')).hexdigest()
-        password_in_database_hash = user.get("password_hash")
-            
-        if password_inputed_hash == password_in_database_hash:
-            client.close()
-            print("login succesful")
-            return Status.SUCCESS,  
-        else: 
-            client.close()
-            print("password is incorrect")
-            return Status.INVALID_PASSWORD
+    if not user:
+        client.close()
+        print("account not found")
+        return Status.INVALID_EMAIL
     
+    password_inputed_hash = hashlib.sha256((password + user.get("salt")).encode('utf-8')).hexdigest()
+    password_in_database_hash = user.get("password_hash")
+
+    if password_inputed_hash == password_in_database_hash:
+        client.close()
+        print("login successful")
+        return Status.SUCCESS
+
     client.close()
-    print("account not found")
-    return Status.INVALID_EMAIL
+    print("password is incorrect")
+    return Status.INVALID_PASSWORD
 
 
 #print(login_user("marcel1", "1234"))

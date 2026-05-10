@@ -55,6 +55,11 @@ def signup():
 @app.route("/login", methods=["POST"])
 def login():
 
+    if session.get("email"):
+        return jsonify({
+            "success": True,
+        }), 200
+
     email = request.form.get("email")
     password = request.form.get("password")
 

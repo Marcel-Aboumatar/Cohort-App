@@ -42,7 +42,7 @@ def query_private_user(email:str):
 
     user = collection.find_one(
         {"email": email}, 
-        {"username": 1, "major": 1, "age": 1}
+        {"_id": 0, "username": 1, "major": 1, "age": 1}
     )
 
     if user == None:
