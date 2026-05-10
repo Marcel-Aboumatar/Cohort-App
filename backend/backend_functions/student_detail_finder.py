@@ -70,7 +70,8 @@ async def main(username, password):
         await page.locator('id=i0118').fill(password)
         await page.get_by_role("button", name="Sign in").click()
         code = await page.locator("id=idRichContext_DisplaySign").inner_text()
-        with open("code.txt", "w+") as file:
+
+        with open("./lib/backend/code.txt", "w+") as file:
             file.write(code)
         await page.wait_for_url("https://colleague-ss.uoguelph.ca/**", wait_until="load")
         await page.goto("https://colleague-ss.uoguelph.ca/Student")
