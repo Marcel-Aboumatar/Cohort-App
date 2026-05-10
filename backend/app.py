@@ -367,6 +367,25 @@ def find_friends_in_shared_class():
         "friends": friends
     }), 200
 
+@app.route("/find_random_in_shared_class", methods=["POST"])
+def find_random_in_shared_class():
+
+    email = session.get("email")
+
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    friends = f.find_random_in_shared_class(email, 10)
+    
+    return jsonify({
+        "success": True,
+        "friends": friends
+    }), 200
+
+
 
 if __name__ == "__main__":
     app.run(host="localhost", port=8001, debug=True)
