@@ -2,28 +2,46 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
+import 'package:cookie_jar/cookie_jar.dart';
+import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 
 final dio = Dio(
   BaseOptions(
-    baseUrl: "http://127.0.0.1:5000",
+    baseUrl: "https://unattired-jackson-undaughterly.ngrok-free.dev",
     connectTimeout: Duration(seconds: 10),
     receiveTimeout: Duration(seconds: 10),
     headers: {
       "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
     },
   ),
 );
 
+// final cookieJar = CookieJar();
+
+// void setupDio() {
+//   dio.interceptors.add(CookieManager(cookieJar));
+// }
+
 void main() {
+  //setupDio();
   runApp(const MyApp());
 }
 
 Future<bool> logIn(String email, String password) async {
-  final url = Uri.parse('http://127.0.0.1:5000/login');
+  //final url = Uri.parse('https://unattired-jackson-undaughterly.ngrok-free.dev/login');
+
 
   print('email: $email');
   print('pass: $password');
 
+  // final response = await http.post(
+  //   url,
+  //   body: {
+  //     'email':email,
+  //     'password':password,
+  //     }
+  // ).timeout(const Duration(seconds: 10));
 
   final response = await dio.post(
     "/login",
@@ -31,12 +49,16 @@ Future<bool> logIn(String email, String password) async {
       "email": email,
       "password": password,
     }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
   );
   
 
   print(response.data);
   if (response.statusCode == 200) { //got a response
-    //TODO: Check the response body to see if we actually logged in
     print("success");
     return true;
     
@@ -50,13 +72,18 @@ Future<bool> logIn(String email, String password) async {
 Future<void> deleteUser(String email) async{
   final url = Uri.parse('http://127.0.0.1:5000/delete_user');
 
-  final response = await http.post(
-    url,
-    body: {
-      'email': email,
-      //'password': password,
-    }
-  ).timeout(const Duration(seconds: 10));
+  final response = await dio.post(
+    "/delete_user",
+    data: FormData.fromMap({
+      "email": email,
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
+
 
   if(response.statusCode == 200){ //valid
     return;
@@ -64,28 +91,33 @@ Future<void> deleteUser(String email) async{
 }
 //return if succeeded
 Future<bool> signUp(String username, String age, String major, String email, String password, String discoverable) async {
-  final url = Uri.parse('http://127.0.0.1:5000/signup');
+  //final url = Uri.parse('http://127.0.0.1:5000/signup');
   print('username: $username');
   print('email: $email');
   print('pass: $password');
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/signup",
+    data: FormData.fromMap({
       'username': username,
       'age':age,
       'major':major,
       'email':email,
       'password': password,
       'discoverable':discoverable,
-    }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
 
   
 
 
   if (response.statusCode == 200) { //got a response
-    print(response.body);
+    print(response.data);
     return true;
   } else { //could not log in
     print('Error: ${response.statusCode}');
@@ -96,17 +128,26 @@ Future<bool> signUp(String username, String age, String major, String email, Str
 Future<void> getUserInfo(String email) async{
   final url = Uri.parse('http://127.0.0.1:5000/get_user_info');
   print("Email: $email");
-  final response = await http.post(
-    url,
-    body: {
+
+  
+
+  final response = await dio.post(
+    "/get_user_info",
+    data: FormData.fromMap({
       'email':email,
-    }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+    
+  ),
+  );
   
 
   
   if (response.statusCode == 200) { //got a response
-    print(response.body);
+    print(response.data);
   } else { //could not log in
     print('Error: ${response.statusCode}');
   }
@@ -116,15 +157,20 @@ Future<void> getPrivateUserInfo(String email) async{
   final url = Uri.parse('http://127.0.0.1:5000/get_private_user_info');
   print("Email: $email");
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/get_private_user_info",
+    data: FormData.fromMap({
       'email':email,
-    }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
   
   if(response.statusCode == 200){
-    print(response.body);
+    print(response.data);
   }
   else{
     print("Error: ${response.statusCode}");
@@ -134,15 +180,21 @@ Future<void> getPrivateUserInfo(String email) async{
 Future<bool> sendFriendRequest(String email_sender, String email_receiver) async{
   final url = Uri.parse('http://127.0.0.1:5000/send_friend_request');
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/send_friend_request",
+    data: FormData.fromMap({
       'email_sender':email_sender,
       'email_receiver':email_receiver,
-    }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
+
   if(response.statusCode == 200){
-    print(response.body);
+    print(response.data);
     return true;
   }
   else{
@@ -151,43 +203,78 @@ Future<bool> sendFriendRequest(String email_sender, String email_receiver) async
   }
 }
 //we are email_receiver
-Future<void> acceptFriendRequest(String email_sender, String email_receiver) async{
+Future<bool> acceptFriendRequest(String email_sender, String email_receiver) async{
   final url = Uri.parse('http://127.0.0.1:5000/accept_friend_request');
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/accept_friend_request",
+    data: FormData.fromMap({
       'email_sender':email_sender,
       'email_receiver':email_receiver,
-      }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
+
+  if(response.statusCode == 200){
+    print(response.data);
+    return true;
+  }
+  else{
+    print("Error: ${response.statusCode}");
+    return false;
+  }
+  
 }
 //we are email_receiver
-Future<void> declineFriendRequest(String email_sender, String email_receiver) async{
+Future<bool> declineFriendRequest(String email_sender, String email_receiver) async{
   final url = Uri.parse('http://127.0.0.1:5000/decline_friend_request');
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/decline_friend_request",
+    data: FormData.fromMap({
       'email_sender':email_sender,
       'email_receiver':email_receiver,
-      }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
+
+  if(response.statusCode == 200){
+    print(response.data);
+    return true;
+  }
+  else{
+    print("Error: ${response.statusCode}");
+    return false;
+  }
 }
 
 //it doesn't matter what is which but we're user
 Future<bool> removeFriend(String email_user, String email_friend) async{
   final url = Uri.parse('http://127.0.0.1:5000/remove_friend');
 
-  final response = await http.post(
-    url,
-    body: {
-      'email_user':email_user,
-      'email_friend':email_friend,
-      }
-  ).timeout(const Duration(seconds: 10));
+  final response = await dio.post(
+    "/decline_friend_request",
+    data: FormData.fromMap({
+      'email_sender':email_user,
+      'email_receiver':email_friend,
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
+
   if(response.statusCode == 200){
-    print(response.body);
+    print(response.data);
     return true;
   }
   else{
@@ -222,23 +309,34 @@ Future<bool> updateUser(String email, String username, String major, String age,
 Future<void> getAllFriends(String email) async{
   final url = Uri.parse('http://127.0.0.1:5000/get_all_friends');
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/get_all_friends",
+    data: FormData.fromMap({
       'email':email,
-      }
-  ).timeout(const Duration(seconds: 10));
+
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
 }
 
 Future<void> getAllFriendRequests(String email) async{
-  final url = Uri.parse('http://127.0.0.1:5000/get_all_friend_requests');
+  //final url = Uri.parse('http://127.0.0.1:5000/get_all_friend_requests');
 
-  final response = await http.post(
-    url,
-    body: {
+  final response = await dio.post(
+    "/get_all_friend_requests",
+    data: FormData.fromMap({
       'email':email,
-      }
-  ).timeout(const Duration(seconds: 10));
+    }),
+    options: Options(
+    extra: {
+      'withCredentials': true,
+    },
+  ),
+  );
 }
 
 class MyApp extends StatelessWidget {
