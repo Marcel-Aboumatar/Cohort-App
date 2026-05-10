@@ -57,18 +57,9 @@ async def course_output_formatter(page1, i):
 
 
 async def main(username, password):
-    # headed_browser = await p.chromium.launch(headless=False)
-    # current_context = await headed_browser.new_context()
-    # page = await current_context.new_page()
-    # page.set_default_timeout(0)
-    # await page.goto("https://colleague-ss.uoguelph.ca/Student")
-    # await page.wait_for_url("https://login.microsoftonline.com/**")
-    # await page.wait_for_url("https://colleague-ss.uoguelph.ca/**", wait_until="load")
-    # cookie_list = await current_context.cookies()
-    # await current_context.close()
-    # await headed_browser.close()
+
     async with async_playwright() as p:
-        browser_instance = await p.chromium.launch()
+        browser_instance = await p.chromium.launch(headless=False)
         current_context = await browser_instance.new_context()
         page = await current_context.new_page()
         page.set_default_timeout(0)
@@ -76,10 +67,9 @@ async def main(username, password):
         await page.wait_for_url("https://login.microsoftonline.com/**")
         await page.get_by_role("textbox").fill(username)
         await page.get_by_role("button", name="Next").click()
-        await page.wait_for_load_state("domcontentloaded")
-        await page.get_by_role("textbox").fill(password)
+        await page.locator('id=i0118').fill(password)
         await page.get_by_role("button", name="Sign in").click()
-        code = await page.get_by_role("generic", name="Open your Authenticator app and approve the request. Enter the number if prompted.").inner_text()
+        code = await page.locator("id=idRichContext_DisplaySign").inner_text()
         with open("code.txt", "w+") as file:
             file.write(code)
         await page.wait_for_url("https://colleague-ss.uoguelph.ca/**", wait_until="load")
@@ -88,7 +78,6 @@ async def main(username, password):
         await page.get_by_role("button", name="Academics").click()
         await page.get_by_role("button", name="Student Planning").click()
         await page.get_by_role("link", name="Plan, Schedule, Register &").click()
-        await page.get_by_role("button", name="Show the previous term").click()
         async with page.expect_popup() as page1_info:
             await page.locator("#print-schedule").click()
         page1 = await page1_info.value
@@ -101,4 +90,4 @@ async def main(username, password):
         return outputs
     
 def run_playwright(username,password):
-    return asyncio.run(main(username,password))
+    return asyncio.run(main(username, password))
