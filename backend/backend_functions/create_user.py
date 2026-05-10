@@ -9,26 +9,28 @@ import hashlib
 import random
 import string
 
+from status_enums import Status
+
 #takes a username and a password as strings
 #if the username is unique it adds it to the database and returns 1
 #otherwise it returns 0
-def add_user_to_database(username:str, password:str):
+def add_user_to_database(username:str, age:str, major:str, email:str, password:str, discoverable:bool):
     #load the database
     load_dotenv()
     DATABASE_URI = os.getenv("DATABASE_URI")
 
     client = MongoClient(DATABASE_URI, server_api=ServerApi('1'))
-    database = client["users"]
-    collection = database["login"]
+    database = client["user_database"]
+    collection = database["users"]
 
     #check for unique username
     all_users = [user for user in collection.find()]
 
     for user in all_users:
-        if user.get("username") == username:
+        if user.get("email") == email:
             client.close()
-            print("username already exists")
-            return 0
+            print("email already exists")
+            return Status.EMAIL_ALREADY_EXISTS
 
 
     #hash password
@@ -37,12 +39,20 @@ def add_user_to_database(username:str, password:str):
     password_hash = hashlib.sha256((password + salt).encode('utf-8')).hexdigest()
 
     #add the info to the database
-    user_info = {"username": username, "password_hash": password_hash, "salt": salt, "courses": [], "friends": []}
+    user_info = {
+                "email": email, 
+                "password_hash": password_hash, 
+                "salt": salt, 
+                "username": username,
+                "major": major,
+                "age": age,
+                "discoverable": discoverable,
+                "courses": [], 
+                "friends": [],
+                "incoming_friend_requests":[]
+    }
     collection.insert_one(user_info)
     
     client.close()
     print("added new user")
     return 1
-
-
-#print(add_user_to_database("marcel1", "1234"))
