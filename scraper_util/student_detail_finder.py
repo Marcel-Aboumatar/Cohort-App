@@ -16,10 +16,13 @@ async def course_output_formatter(page1, i):
     print(formatted_time)
     course_sections = []
     for j in range(0,len(formatted_time),2):
-        # type_days_time = formatted_time[j]
+        type_days_time = formatted_time[j]
+        course_type = type_days_time
+        days = type_days_time
+        time_range = type_days_time
         # course_duration = formatted_time[j+1]
         # be sure to use the max_splits part of str.split
-        course_type, days, time_range =  formatted_time[j].split(" ", 3)
+        # course_type, days, time_range =  formatted_time[j].split(" ", 3)
         
         course_sections.append({"course_type":course_type, "days": days, "time_range": time_range,"course_duration":formatted_time[j+1]})
     # can guarentee the course duration for the term
