@@ -14,7 +14,7 @@ from .status_enums import Status
 #takes a username and a password as strings
 #if the username is unique it adds it to the database and returns 1
 #otherwise it returns 0
-def add_user_to_database(username:str, age:str, major:str, email:str, password:str, discoverable:bool):
+def create_user(username:str, age:str, major:str, email:str, password:str, discoverable:bool):
     #load the database
     load_dotenv()
     DATABASE_URI = os.getenv("DATABASE_URI")
