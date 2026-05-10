@@ -378,7 +378,7 @@ class BackendService {
     ];
   } 
 
-  
+
 
   // Profile
   static Future<bool> logIn({
@@ -594,35 +594,35 @@ class BackendService {
     var test = await getUserProfile(userId: userId);
 
     print('Getting all classes for $userId');
-    final response = await dio.post(
-      "/get_user_info",
-      data: FormData.fromMap({
-        'email':userId,
-      }),
-      options: Options(
-      extra: {
-        'withCredentials': true,
-      },
-    ),
-    );
-    print(response.data);
-    List<Map<String, String>> all = [];
+    // final response = await dio.post(
+    //   "/get_user_info",
+    //   data: FormData.fromMap({
+    //     'email':userId,
+    //   }),
+    //   options: Options(
+    //   extra: {
+    //     'withCredentials': true,
+    //   },
+    // ),
+    // );
+    //print("after response");
+    //List<Map<String, String>> all = [];
       //print(response.data);
-    if(response.data['success']){
-      var user = response.data['user'];
-      var courses = user['courses'];
-      for(String course in courses){
-        Map<String, String> c = {};
-        c['code'] = 'code';
-        c['name'] = 'name';
-        c['days'] = 'days';
-        c['startTime'] = 'start';
-        c['endTime'] = 'end';
-        all.add(user);
-      }
-    }
-
-    print(all);
+    // if(response.data['success']){
+    //   var user = response.data['user'];
+    //   var courses = user['courses'];
+    //   for(String course in courses){
+    //     Map<String, String> c = {};
+    //     c['code'] = 'code';
+    //     c['name'] = 'name';
+    //     c['days'] = 'days';
+    //     c['startTime'] = 'start';
+    //     c['endTime'] = 'end';
+    //     all.add(c);
+    //   }
+    // }
+    print("returning");
+    //print(all);
 
     return [
       {
