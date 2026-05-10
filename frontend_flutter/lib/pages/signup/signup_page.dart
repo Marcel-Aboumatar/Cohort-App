@@ -5,6 +5,8 @@ import '../../components/button/button_widget.dart';
 import '../../components/text_field/text_field_widget.dart';
 import '../login/login_page.dart';
 import '../main_discovery/main_discovery_page.dart';
+import '../../backend/session_manager.dart';
+import '../../backend/backend_service.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -35,18 +37,18 @@ class _SignupPageState extends State<SignupPage> {
     super.dispose();
   }
 
-  void createAccount() {
+  Future<void> createAccount() async {
     final fullName = fullNameController.text.trim();
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
-    final major = majorController.text.trim();
     final age = ageController.text.trim();
+    final major = majorController.text.trim();
 
     if (fullName.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
-        major.isEmpty ||
-        age.isEmpty) {
+        age.isEmpty ||
+        major.isEmpty) {
       setState(() {
         error = 'All fields are required';
       });
@@ -57,12 +59,21 @@ class _SignupPageState extends State<SignupPage> {
       error = null;
     });
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MainDiscoveryPage(),
-      ),
-    );
+    if (await BackendService.signUp(name: fullName, age: age, major: major, email: email, password: password, discoverable: discoverable)) {
+      await SessionManager.saveEmail(email);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const MainDiscoveryPage(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to create account'),
+        ),
+      );
+    }
   }
 
   @override
@@ -88,12 +99,7 @@ class _SignupPageState extends State<SignupPage> {
                 children: [
                   IconButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LoginPage(),
-                        ),
-                      );
+                      Navigator.pop(context);
                     },
                     icon: Icon(
                       Icons.arrow_back_rounded,

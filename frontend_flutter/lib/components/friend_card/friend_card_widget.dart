@@ -1,21 +1,33 @@
 import 'package:flutter/material.dart';
 
 import '../button/button_widget.dart';
+import '../../backend/backend_service.dart';
+import '../../backend/session_manager.dart';
 
 class FriendCardWidget extends StatelessWidget {
   const FriendCardWidget({
     super.key,
     this.name = '',
+    this.email = '',
     this.classes = const ['Data Structures', 'Linear Algebra'],
     this.onMessage,
     this.onCompareSchedules,
   });
 
+  final String email;
   final String name;
   final List<String> classes;
 
   final VoidCallback? onMessage;
   final VoidCallback? onCompareSchedules;
+
+  onDelete() async{
+    String userId = await SessionManager.getEmail();
+    await BackendService.removeFriend(
+      userId: userId,
+      friendId: email,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +92,16 @@ class FriendCardWidget extends StatelessWidget {
                 ),
 
                 IconButton(
+                  onPressed: onDelete,
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: colors.primary,
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                IconButton(
                   onPressed: onMessage,
                   icon: Icon(
                     Icons.chat_bubble_outline_rounded,
@@ -127,49 +149,6 @@ class FriendCardWidget extends StatelessWidget {
               onPressed: onCompareSchedules,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar({
-    required this.initials,
-    required this.imageUrl,
-  });
-
-  final String initials;
-  final String imageUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    if (imageUrl.isNotEmpty) {
-      return CircleAvatar(
-        radius: 24,
-        backgroundImage: NetworkImage(imageUrl),
-      );
-    }
-
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: colors.primaryContainer,
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        initials,
-        maxLines: 1,
-        overflow: TextOverflow.clip,
-        style: TextStyle(
-          color: colors.onPrimaryContainer,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          height: 1.2,
         ),
       ),
     );

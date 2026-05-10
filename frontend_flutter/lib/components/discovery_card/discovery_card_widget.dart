@@ -9,13 +9,13 @@ class DiscoveryCardWidget extends StatelessWidget {
     this.age = '20',
     this.major = 'Computer Science',
     this.classes = const ['Data Structures', 'Linear Algebra'],
-    this.onConnect,
+    this.onRequest,
   });
   final String name;
   final String age;
   final String major;
   final List<String> classes;
-  final VoidCallback? onConnect;
+  final VoidCallback? onRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -100,11 +100,11 @@ class DiscoveryCardWidget extends StatelessWidget {
           const SizedBox(height: 16),
 
           ButtonWidget(
-            content: 'Connect',
+            content: 'Send Friend Request',
             variant: 'primary',
             size: 'medium',
             fullWidth: true,
-            onPressed: onConnect,
+            onPressed: onRequest,
           ),
         ],
       ),

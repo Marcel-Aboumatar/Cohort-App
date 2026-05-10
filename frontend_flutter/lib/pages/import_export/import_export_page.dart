@@ -1,10 +1,52 @@
 import 'package:flutter/material.dart';
 
 import '../../components/tool_card/tool_card_widget.dart';
-import '../main_discovery/main_discovery_page.dart';
+import '../../components/top_nav_bar/top_nav_bar_widget.dart';
+import '../../backend/backend_service.dart';
+import '../../backend/session_manager.dart';
 
-class ImportExportPage extends StatelessWidget {
+class ImportExportPage extends StatefulWidget {
   const ImportExportPage({super.key});
+
+  @override
+  State<ImportExportPage> createState() => _ImportExportPageState();
+}
+
+class _ImportExportPageState extends State<ImportExportPage> {
+  String userId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+    final email = await SessionManager.getEmail();
+    if (email == '') return;
+
+    setState(() {
+      userId = email;
+    });
+  }
+
+  Future<void> importSchedule() async {
+    await BackendService.importSchedule();
+  }
+
+  Future<void> exportGoogle() async {
+    await BackendService.exportScheduleGoogle(
+      fromUserId: userId,
+      toEmail: userId,
+    );
+  }
+
+  Future<void> exportOutlook() async {
+    await BackendService.exportScheduleOutlook(
+      fromUserId: userId,
+      toEmail: userId,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,52 +61,8 @@ class ImportExportPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SafeArea(
-                bottom: false,
-                child: Container(
-                  color: colors.surface,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const MainDiscoveryPage(),
-                                  ),
-                                );
-                              },
-                              icon: Icon(
-                                Icons.arrow_back_rounded,
-                                color: colors.onSurface,
-                              ),
-                            ),
-                            Text(
-                              'Import & Export',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                height: 1.4,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {},
-                              icon: Icon(
-                                Icons.help_outline_rounded,
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Divider(height: 1, color: colors.outlineVariant),
-                    ],
-                  ),
-                ),
+              const TopNavBar(
+                currentIndex: 4,
               ),
 
               Padding(
@@ -117,14 +115,14 @@ class ImportExportPage extends StatelessWidget {
                   buttonText: 'Connect WebAdvisor',
                   variant: 'primary',
                   buttonIcon: 'login_rounded',
-                  onPressed: () {},
+                  onPressed: importSchedule,
                 ),
               ),
 
               const SizedBox(height: 24),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
                 child: _SectionHeader(
                   icon: Icons.upload_rounded,
                   title: 'Export to Calendar',
@@ -143,7 +141,7 @@ class ImportExportPage extends StatelessWidget {
                   buttonText: 'Export to Google',
                   variant: 'outline',
                   buttonIcon: 'open_in_new_rounded',
-                  onPressed: () {},
+                  onPressed: exportGoogle,
                 ),
               ),
 
@@ -159,7 +157,7 @@ class ImportExportPage extends StatelessWidget {
                   buttonText: 'Export to Outlook',
                   variant: 'outline',
                   buttonIcon: 'open_in_new_rounded',
-                  onPressed: () {},
+                  onPressed: exportOutlook,
                 ),
               ),
 
@@ -174,24 +172,6 @@ class ImportExportPage extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.sync_rounded,
-                            color: colors.onSurfaceVariant,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Last synced: 2 hours ago',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: colors.onSurfaceVariant,
-                              height: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

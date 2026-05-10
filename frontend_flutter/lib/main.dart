@@ -24,7 +24,7 @@ class CohortApp extends StatelessWidget {
           seedColor: const Color(0xFF635BFF),
         ),
       ),
-      home: const SignupPage(),
+      home: const LoginPage(),
     );
   }
 }

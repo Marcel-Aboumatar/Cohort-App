@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../main_discovery/main_discovery_page.dart';
 import '../signup/signup_page.dart';
+import '../../backend/session_manager.dart';
+import '../../backend/backend_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void login() {
+  Future<void> login() async {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
 
@@ -36,12 +38,21 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const MainDiscoveryPage(),
-      ),
-    );
+    if (await BackendService.logIn(email: username, password: password)) {
+      await SessionManager.saveEmail(username);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const MainDiscoveryPage(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid username or password'),
+        ),
+      );
+    }
   }
 
   @override

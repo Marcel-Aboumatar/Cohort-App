@@ -5,38 +5,64 @@ import '../../components/friend_card/friend_card_widget.dart';
 import '../../components/tab_group/tab_group_widget.dart';
 import '../../components/text_field/text_field_widget.dart';
 import '../main_discovery/main_discovery_page.dart';
+import '../profile_settings/profile_settings_page.dart';
+import '../../components/top_nav_bar/top_nav_bar_widget.dart';
+import '../friend_requests/friend_requests_page.dart';
+import '../../backend/backend_service.dart';
+import '../../backend/session_manager.dart';
 
 class FriendsPage extends StatefulWidget {
-  const FriendsPage({super.key});
+  const FriendsPage({
+    super.key,
+    this.courseFilter,
+  });
+
+  final String? courseFilter;
 
   @override
   State<FriendsPage> createState() => _FriendsPageState();
 }
 
 class _FriendsPageState extends State<FriendsPage> {
-  String search = '';
+  void openProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProfileSettingsPage(),
+      ),
+    );
+  }
 
-  final users = [
-    {
-      'name': 'Alex Rivera',
-      'email': 'alex.rivera@example.com'
-    },
-    {
-      'name': 'Sarah Chen',
-      'email': 'sarah.chen@example.com'
-    },
-    {
-      'name': 'Jordan Smith',
-      'email': 'jordan.smith@example.com'
-    },
-  ];
+  String search = '';
+  List<Map<String, String>> friends = [];
+  String userId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    loadFriends();
+  }
+  
+  Future<void> loadFriends() async {
+    String email = await SessionManager.getEmail();
+    if (email == '') return;
+    final users =
+        await BackendService.getAllFriends(
+      userId: email,
+    );
+
+    setState(() {
+      friends = users;
+      userId = email;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    final filteredUsers = users.where((user) {
+    final filteredFriends = friends.where((user) {
       return user['name']!
           .toLowerCase()
           .contains(search.toLowerCase());
@@ -49,65 +75,8 @@ class _FriendsPageState extends State<FriendsPage> {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SafeArea(
-              bottom: false,
-              child: Container(
-                color: colors.surface,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        24,
-                        16,
-                        24,
-                        16,
-                      ),
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'cohort',
-                            style:
-                                theme.textTheme.headlineSmall?.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w800,
-                              height: 1.3,
-                            ),
-                          ),
-
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(
-                                  Icons.search_rounded,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              IconButton(
-                                onPressed: () {},
-                                icon: Icon(
-                                  Icons.person_outline_rounded,
-                                  color: colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Divider(
-                      height: 1,
-                      color: colors.outlineVariant,
-                    ),
-                  ],
-                ),
-              ),
+            const TopNavBar(
+              currentIndex: 1,
             ),
 
             Padding(
@@ -118,11 +87,18 @@ class _FriendsPageState extends State<FriendsPage> {
                 0,
               ),
               child: TabGroupWidget(
-                label1: 'My Friends',
-                label2: 'Requests',
-                label2Present: true,
-                label3: 'Add New',
-                label3Present: true,
+                labels: const ['My Friends', 'Friend Requests'],
+                initialIndex: 0,
+                onTabChanged: (index) {
+                  if (index == 1) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FriendRequestsPage(),
+                      ),
+                    );
+                  }
+                },
               ),
             ),
 
@@ -152,26 +128,36 @@ class _FriendsPageState extends State<FriendsPage> {
                     const SizedBox(height: 20),
 
                     Text(
-                      'Your Connections',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        height: 1.4,
-                      ),
+                      widget.courseFilter == null
+                          ? 'Your Connections'
+                          : 'Friends in ${widget.courseFilter}',
                     ),
 
                     const SizedBox(height: 16),
 
-                    ...filteredUsers.map(
-                      (user) => Padding(
-                        padding:
-                            const EdgeInsets.only(bottom: 16),
-                        child: FriendCardWidget(
-                          name: user['name']!,
-                          classes: [
-                            'Data Structures',
-                            'Web Development',
-                            'Mobile Development'
-                          ],
+                    ...filteredFriends.map(
+                      (friend) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: FutureBuilder<
+                            List<Map<String, dynamic>>>(
+                          future: BackendService.getSharedClasses(
+                            userId: userId,
+                            otherId: friend['email'] ?? '',
+                          ),
+                          builder: (context, snapshot) {
+                            final sharedClasses =
+                                snapshot.data ?? [];
+
+                            return FriendCardWidget(
+                              name: friend['name']!,
+                              email: friend['email']!,
+                              classes: sharedClasses
+                                  .map(
+                                    (c) => c['code'].toString(),
+                                  )
+                                  .toList(),
+                            );
+                          },
                         ),
                       ),
                     ),

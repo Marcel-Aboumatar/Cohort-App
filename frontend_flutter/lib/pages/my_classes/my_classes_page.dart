@@ -4,10 +4,12 @@ import '../../components/button/button_widget.dart';
 import '../../components/class_card/class_card_widget.dart';
 import '../../components/text_field/text_field_widget.dart';
 
+import '../../components/top_nav_bar/top_nav_bar_widget.dart';
 import '../friends/friends_page.dart';
 import '../import_export/import_export_page.dart';
-import '../main_discovery/main_discovery_page.dart';
-import '../profile_settings/profile_settings_page.dart';
+
+import '../../backend/backend_service.dart';
+import '../../backend/session_manager.dart';
 
 class MyClassesPage extends StatefulWidget {
   const MyClassesPage({super.key});
@@ -18,133 +20,50 @@ class MyClassesPage extends StatefulWidget {
 
 class _MyClassesPageState extends State<MyClassesPage> {
   String search = '';
+  List<Map<String, dynamic>> classes = [];
+  String userId = '';
 
-  final classes = [
-    {
-      'code': 'CIS 1300',
-      'name': 'Programming',
-      'time': 'MWF 10:00 AM',
-      'friends': '',
-    },
-    {
-      'code': 'MATH 1200',
-      'name': 'Linear Algebra',
-      'time': 'TTh 1:30 PM',
-      'friends': '',
-    },
-    {
-      'code': 'HIST 1050',
-      'name': 'World History II',
-      'time': 'MWF 2:00 PM',
-      'friends': '',
-    },
-    {
-      'code': 'PHYS 3010',
-      'name': 'Quantum Mechanics',
-      'time': 'TTh 9:00 AM',
-      'friends': '',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    loadClasses();
+  }
+  
+  Future<void> loadClasses() async {
+    String email = await SessionManager.getEmail();
+    if (email == '') return;
+    final classesCheck =
+        await BackendService.getAllClasses(
+      userId: email,
+    );
+
+    setState(() {
+      classes = classesCheck;
+      userId = email;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
-    final filteredClasses = classes.where((course) {
-      final query = search.toLowerCase();
-
-      return course['code']!
-              .toLowerCase()
-              .contains(query) ||
-          course['name']!
-              .toLowerCase()
-              .contains(query);
-    }).toList();
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        
         backgroundColor: theme.scaffoldBackgroundColor,
 
         body: Column(
           children: [
-            SafeArea(
-              bottom: false,
-              child: Container(
-                color: colors.surface,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        24,
-                        16,
-                        24,
-                        16,
-                      ),
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const MainDiscoveryPage(),
-                                    ),
-                                  );
-                                },
-                                icon: Icon(
-                                  Icons.arrow_back_rounded,
-                                  color: colors.onSurface,
-                                ),
-                              ),
-
-                              const SizedBox(width: 16),
-
-                              Text(
-                                'My Classes',
-                                style: theme.textTheme.titleLarge
-                                    ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ImportExportPage(),
-                                ),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.add_circle_outline_rounded,
-                              color: colors.primary,
-                              size: 28,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Divider(
-                      height: 1,
-                      color: colors.outlineVariant,
-                    ),
-                  ],
-                ),
-              ),
+            const TopNavBar(
+              currentIndex: 2,
             ),
+
+          Divider(
+            height: 1,
+            color: colors.outlineVariant,
+          ),
 
             Expanded(
               child: SingleChildScrollView(
@@ -171,16 +90,44 @@ class _MyClassesPageState extends State<MyClassesPage> {
 
                     const SizedBox(height: 24),
 
-                    ...filteredClasses.map(
+                    ...classes.map(
                       (course) => Padding(
                         padding:
                             const EdgeInsets.only(bottom: 16),
-                        child: ClassCardWidget(
-                          courseCode: course['code']!,
-                          courseName: course['name']!,
-                          time: course['time']!,
-                          friendSources:
-                              course['friends']!,
+                        child: FutureBuilder<List<Map<String, String>>>(
+                          future: BackendService.getFriendsInClass(
+                            userId: userId,
+                            courseCode: course['code'] as String,
+                          ),
+                          builder: (context, snapshot) {
+                            final friendData =
+                                snapshot.data ?? [];
+
+                            final friendNames = friendData
+                                .map((f) => f['name'] ?? '')
+                                .toList();
+
+                            return ClassCardWidget(
+                              courseCode: course['code'] as String,
+                              courseName: course['name'] as String,
+                              time:
+                                  '${(course['days'] as List).join(', ')}: ${course['startTime']} - ${course['endTime']}',
+
+                              friends: friendNames,
+
+                              onViewAll: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => FriendsPage(
+                                      courseFilter:
+                                          course['code'] as String,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -249,91 +196,6 @@ class _MyClassesPageState extends State<MyClassesPage> {
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            SafeArea(
-              top: false,
-              child: Container(
-                color: colors.surface,
-                child: Column(
-                  children: [
-                    Divider(
-                      height: 1,
-                      color: colors.outlineVariant,
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        24,
-                        16,
-                        24,
-                        16,
-                      ),
-                      child: Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceAround,
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const MainDiscoveryPage(),
-                                ),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.explore_rounded,
-                              color: colors.onSurfaceVariant,
-                            ),
-                          ),
-
-                          IconButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const FriendsPage(),
-                                ),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.group_rounded,
-                              color: colors.onSurfaceVariant,
-                            ),
-                          ),
-
-                          IconButton(
-                            onPressed: () {},
-                            icon: Icon(
-                              Icons.school_rounded,
-                              color: colors.primary,
-                            ),
-                          ),
-
-                          IconButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ProfileSettingsPage(),
-                                ),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.person_rounded,
-                              color: colors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],

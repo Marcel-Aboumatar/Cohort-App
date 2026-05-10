@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 class TextFieldWidget extends StatefulWidget {
   const TextFieldWidget({
     super.key,
+    this.enabled = true,
     this.label = '',
     this.keyboardType,
     this.inputFormatters,
@@ -23,6 +24,7 @@ class TextFieldWidget extends StatefulWidget {
     this.onSubmitted,
   });
 
+  final bool enabled;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final String label;
@@ -54,6 +56,16 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
     super.initState();
     controller = TextEditingController(text: widget.value);
     focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(TextFieldWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.value != widget.value &&
+        controller.text != widget.value) {
+      controller.text = widget.value;
+    }
   }
 
   @override
@@ -109,6 +121,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
 
               Expanded(
                 child: TextFormField(
+                  enabled: widget.enabled,
                   inputFormatters: widget.inputFormatters,
                   keyboardType: widget.keyboardType,
                   controller: controller,

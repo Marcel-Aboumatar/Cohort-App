@@ -7,28 +7,21 @@ class ClassCardWidget extends StatelessWidget {
     super.key,
     this.courseCode = 'CS 101',
     this.courseName = 'Intro to Computer Science',
-    this.time = 'MWF 10:00 AM',
-    this.friendSources =
-        'https://i.pravatar.cc/150?u=1,https://i.pravatar.cc/150?u=2,https://i.pravatar.cc/150?u=3',
+    this.time = 'M, W, F: 10:00 AM - 11:00 AM',
+    this.friends = const [],
     this.onViewAll,
   });
 
+  final List<String> friends;
   final String courseCode;
   final String courseName;
   final String time;
-  final String friendSources;
   final VoidCallback? onViewAll;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-
-    final friends = friendSources
-        .split(',')
-        .map((url) => url.trim())
-        .where((url) => url.isNotEmpty)
-        .toList();
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -111,10 +104,19 @@ class ClassCardWidget extends StatelessWidget {
 
             const SizedBox(height: 8),
 
+            Text(
+              friends.join(', '),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.onSurfaceVariant,
+                height: 1.2,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _FriendAvatars(imageUrls: friends),
                 ButtonWidget(
                   content: 'View All',
                   variant: 'ghost',
@@ -126,45 +128,6 @@ class ClassCardWidget extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _FriendAvatars extends StatelessWidget {
-  const _FriendAvatars({required this.imageUrls});
-
-  final List<String> imageUrls;
-
-  @override
-  Widget build(BuildContext context) {
-    final shown = imageUrls.take(3).toList();
-
-    if (shown.isEmpty) {
-      return Text(
-        'No friends yet',
-        style: Theme.of(context).textTheme.bodySmall,
-      );
-    }
-
-    return SizedBox(
-      width: 24.0 + (shown.length - 1) * 18.0,
-      height: 32,
-      child: Stack(
-        children: [
-          for (int i = 0; i < shown.length; i++)
-            Positioned(
-              left: i * 18,
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.white,
-                child: CircleAvatar(
-                  radius: 14,
-                  backgroundImage: NetworkImage(shown[i]),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }
