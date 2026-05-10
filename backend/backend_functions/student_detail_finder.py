@@ -1,6 +1,5 @@
 import asyncio
 from playwright.async_api import async_playwright, Cookie, Playwright
-p = Playwright
 async def day_to_matrix_converter(day_string: str):
     splitted_string = "".join(" " + c if c.isupper() else c for c in day_string).strip()
     splitted_string = splitted_string.split()
@@ -57,22 +56,33 @@ async def course_output_formatter(page1, i):
     return {"status":status, "code":code, "name":name, "credits":credits,  "location_list":location_list, "course_sections":course_sections, "instructor":instructor}
 
 
-async def scraper_main(cookies):
+async def main(username, password):
+    # headed_browser = await p.chromium.launch(headless=False)
+    # current_context = await headed_browser.new_context()
+    # page = await current_context.new_page()
+    # page.set_default_timeout(0)
+    # await page.goto("https://colleague-ss.uoguelph.ca/Student")
+    # await page.wait_for_url("https://login.microsoftonline.com/**")
+    # await page.wait_for_url("https://colleague-ss.uoguelph.ca/**", wait_until="load")
+    # cookie_list = await current_context.cookies()
+    # await current_context.close()
+    # await headed_browser.close()
     async with async_playwright() as p:
-        headed_browser = await p.chromium.launch(headless=False)
-        current_context = await headed_browser.new_context()
+        browser_instance = await p.chromium.launch()
+        current_context = await browser_instance.new_context()
         page = await current_context.new_page()
         page.set_default_timeout(0)
         await page.goto("https://colleague-ss.uoguelph.ca/Student")
         await page.wait_for_url("https://login.microsoftonline.com/**")
+        await page.get_by_role("textbox").fill(username)
+        await page.get_by_role("button", name="Next").click()
+        await page.wait_for_load_state("domcontentloaded")
+        await page.get_by_role("textbox").fill(password)
+        await page.get_by_role("button", name="Sign in").click()
+        code = await page.get_by_role("generic", name="Open your Authenticator app and approve the request. Enter the number if prompted.").inner_text()
+        with open("code.txt", "w+") as file:
+            file.write(code)
         await page.wait_for_url("https://colleague-ss.uoguelph.ca/**", wait_until="load")
-        cookie_list = await current_context.cookies()
-        await current_context.close()
-        await headed_browser.close()
-        headless_browser = await p.chromium.launch()
-        current_context = await headless_browser.new_context()
-        await current_context.add_cookies(cookies=cookie_list) #type:ignore
-        page = await current_context.new_page()
         await page.goto("https://colleague-ss.uoguelph.ca/Student")
         await page.get_by_role("button", name="Open the navigation menu").click()
         await page.get_by_role("button", name="Academics").click()
@@ -90,25 +100,5 @@ async def scraper_main(cookies):
             outputs.append(dict_values)
         return outputs
     
-async def authenticator_main(username, password):
-    p = await async_playwright().start()
-    browser_instance = await p.chromium.launch()
-    current_context = await browser_instance.new_context()
-    page = await current_context.new_page()
-    page.set_default_timeout(0)
-    await page.goto("https://colleague-ss.uoguelph.ca/Student")
-    await page.wait_for_url("https://login.microsoftonline.com/**")
-    await page.get_by_role("textbox").fill(username)
-    await page.get_by_role("button", name="Next").click()
-    await page.wait_for_load_state("domcontentloaded")
-    await page.get_by_role("textbox").fill(username)
-    await page.get_by_role("button", name="Sign in").click()
-    code = await page.get_by_role("generic", name="Open your Authenticator app and approve the request. Enter the number if prompted.").inner_text()
-    
-    return code
-
-def run_webadvisor_scraper(cookies):
-    return asyncio.run(scraper_main(cookies))
-
-def run_authenticator_assistant(username: str, password: str) -> str:
-    return asyncio.run(authenticator_main(username, password))
+def run_playwright(username,password):
+    return asyncio.run(main(username,password))
