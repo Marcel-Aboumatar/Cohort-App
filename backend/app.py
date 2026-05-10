@@ -393,12 +393,50 @@ def find_random_in_shared_class():
         "friends": friends
     }), 200
 
-@app.route("/load_schedule", methods=["POST"])
-def load_schedule():
+@app.route("/load_schedule_login", methods=["POST"])
+def load_schedule_login():
+    
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    if email is None or password is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result = f.run_authenticator_assistant(email, password)
+
+    return jsonify({
+        "success": True,
+        "code": result
+    }), 200
+
+@app.route("/load_schedule_login", methods=["POST"])
+def load_schedule_login():
+    
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    if email is None or password is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result = f.run_playwright(email, password)
+
+    return jsonify({
+        "success": True,
+        "code": result
+    }), 200
+
+@app.route("/scrape", methods=["POST"])
+def scrape():
     
     email = session.get("email")
 
-    if email is None:
+    if email is None or password is None:
         return jsonify({
             "success": False,
             "error": "Missing field"
@@ -408,8 +446,8 @@ def load_schedule():
 
     return jsonify({
         "success": True,
+        "code": result
     }), 200
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
