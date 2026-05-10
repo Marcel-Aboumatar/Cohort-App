@@ -1,11 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-from add_user import add_user_to_database
-from login_user import login_user
-from flask_api import *
+import backend.backend_functions as f
+#from backend.backend_functions import login_user, create_user, query_user, query_private_user
 
-from status_enums import Status
+from backend.backend_functions.status_enums import Status
 
 app = Flask(__name__)
 CORS(app)
@@ -38,19 +37,13 @@ def signup():
     password = request.form.get("password")
     discoverable = request.form.get("discoverable")
 
-    if not username or not age or not major or not email or not password or not discoverable:
+    if username is None or age is None or major is None or email is None or password is None or discoverable is None:
         return jsonify({
             "success": False,
-            "error": "Missing email"
-        }), 400
-    
-    if not password:
-        return jsonify({
-            "success": False,
-            "error": "Missing password"
+            "error": "Missing field"
         }), 400
 
-    result = add_user_to_database(username, age, major, email, password, discoverable)
+    result = f.create_user(username, age, major, email, password, discoverable)
 
     if result == Status.EMAIL_ALREADY_EXISTS:
         return jsonify({
@@ -63,30 +56,106 @@ def signup():
     }), 200
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["POST"])
 def login():
 
-    # Show login page
-    if request.method == "GET":
-        return render_template("login_form_sample.html")
-
-    # Handle login form
-    username = request.form.get("username")
+    email = request.form.get("email")
     password = request.form.get("password")
 
-    if not username:
-        return "Missing username"
+    if email is None or password is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
 
-    if not password:
-        return "Missing password"
+    login_result = f.login_user(email, password)
 
-    login_result = login_user(username, password)
+    if login_result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Not Found"
+        }), 409
+    if login_result == Status.INVALID_PASSWORD:
+        return jsonify({
+            "success": False,
+            "error": "Password Is Incorrect"
+        }), 409
 
-    if login_result:
-        return f"Logged in as {username}"
+    return jsonify({
+        "success": True,
+    }), 200
 
-    return "Incorrect username or password"
+@app.route("/get_user_info", methods=["POST"])
+def get_user_info():
+    email = request.form.get("email")
 
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result, user = f.query_user(email)
+
+    if result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Not Found"
+        }), 409
+
+    return jsonify({
+        "success": True,
+        "user": user
+    }), 200
+
+#gives only the name, age, and major
+@app.route("/get_private_user_info", methods=["POST"])
+def get_private_user_info():
+    email = request.form.get("email")
+
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result, user = f.query_private_user(email)
+
+    if result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Not Found"
+        }), 409
+
+    return jsonify({
+        "success": True,
+        "user": user
+    }), 200
+
+@app.route("/send_friend_request", methods=["POST"])
+def send_friend_request():
+
+    email_sender = request.form.get("email_sender")
+    email_receiver = request.form.get("email_receiver")
+
+    if email_sender is None or email_receiver is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+
+    result = f.send_friend_request(email_sender, email_receiver)
+
+    if result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Error"
+        }), 409
+    
+    return jsonify({
+        "success": True,
+        "user": user
+    }), 200
 
 if __name__ == "__main__":
     app.run(host="localhost", port=8001, debug=True)

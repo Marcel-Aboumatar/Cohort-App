@@ -20,8 +20,8 @@ def add_user_to_database(username:str, age:str, major:str, email:str, password:s
     DATABASE_URI = os.getenv("DATABASE_URI")
 
     client = MongoClient(DATABASE_URI, server_api=ServerApi('1'))
-    database = client["users"]
-    collection = database["login"]
+    database = client["user_database"]
+    collection = database["users"]
 
     #check for unique username
     all_users = [user for user in collection.find()]
@@ -56,6 +56,3 @@ def add_user_to_database(username:str, age:str, major:str, email:str, password:s
     client.close()
     print("added new user")
     return 1
-
-
-#print(add_user_to_database("marcel1", "1234"))
