@@ -9,19 +9,19 @@ import hashlib
 import random
 import string
 
-from status_enums import Status
+from .status_enums import Status
 
 #takes a username and a password as strings
 #if the username is unique it adds it to the database and returns 1
 #otherwise it returns 0
-def add_user_to_database(username:str, age:str, major:str, email:str, password:str, discoverable:bool):
+def create_user(username:str, age:str, major:str, email:str, password:str, discoverable:bool):
     #load the database
     load_dotenv()
     DATABASE_URI = os.getenv("DATABASE_URI")
 
     client = MongoClient(DATABASE_URI, server_api=ServerApi('1'))
-    database = client["users"]
-    collection = database["login"]
+    database = client["user_database"]
+    collection = database["users"]
 
     #check for unique username
     all_users = [user for user in collection.find()]
@@ -56,6 +56,3 @@ def add_user_to_database(username:str, age:str, major:str, email:str, password:s
     client.close()
     print("added new user")
     return 1
-
-
-#print(add_user_to_database("marcel1", "1234"))
