@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-import backend.backend_functions as f
-#from backend.backend_functions import login_user, create_user, query_user, query_private_user
+import backend_functions as f
+#from backend_functions import login_user, create_user, query_user, query_private_user
 
-from backend.backend_functions.status_enums import Status
+from backend_functions.status_enums import Status
 
 app = Flask(__name__)
 CORS(app)

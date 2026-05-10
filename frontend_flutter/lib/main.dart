@@ -69,29 +69,36 @@ class _MyHomePageState extends State<MyHomePage> {
   String resultText = '';
   var classes = ['class1', 'class2'];
 
-
-  Future<void> logIn(String username, String password) async {
+//to use we can set void to a value and await logIn
+  Future<void> logIn(String email, String password) async {
     final url = Uri.parse('http://127.0.0.1:5000/login');
 
     final response = await http.post(
       url,
       body: {
-        'username': username,
+        'email': email,
         'password': password,
       }
     ).timeout(const Duration(seconds: 10));
 
-    print('username: $username');
+    print('email: $email');
     print('pass: $password');
 
+    print(response.body);
     if (response.statusCode == 200) { //got a response
       //TODO: Check the response body to see if we actually logged in
-      print(response.body);
-      setState(() {
-        loggedIn = true;
-        loginError = false;
-      });
-    } else { //Error code bad request
+      
+      // setState(() {
+      //   loggedIn = true;
+      //   loginError = false;
+      // });
+      Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            );
+    } else { //401 - unauthorized
       print('Error: ${response.statusCode}');
       setState(() {
         loginError = true;
@@ -99,6 +106,19 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
   }
+
+  // Future<void> deleteUser(String email) async{
+  //   final url = Uri.parse('http://127.0.0.1:5000/signup');
+
+  //   final response = await http.post(
+  //     url,
+  //     body: {
+  //       'email': username,
+  //       'password': password,
+  //     }
+  //   ).timeout(const Duration(seconds: 10));
+
+  // }
 
   Future<void> signUp(String username, String password) async {
     final url = Uri.parse('http://127.0.0.1:5000/signup');
@@ -116,6 +136,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (response.statusCode == 200) { //got a response
       print(response.body);
+      Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            );
     } else { //could not log in
       print('Error: ${response.statusCode}');
     }
