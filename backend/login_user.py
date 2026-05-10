@@ -8,10 +8,13 @@ import os
 import hashlib
 import random
 
-#takes a username and a password as strings
-#if the username and password match a user in the database then return 1
+from status_enums import Status
+
+
+#takes a email and a password as strings
+#if the email and password match a user in the database then return 1
 #otherwise it returns 0
-def login_user(username:str, password:str):
+def login_user(email:str, password:str):
     #load the database
     load_dotenv()
     DATABASE_URI = os.getenv("DATABASE_URI")
@@ -28,7 +31,7 @@ def login_user(username:str, password:str):
         password_inputed_hash = hashlib.sha256((password + user.get("salt")).encode('utf-8')).hexdigest()
         password_in_database_hash = user.get("password_hash")
 
-        if not(user.get("username") == username):
+        if not(user.get("email") == email):
             continue
             
         if not(password_inputed_hash == password_in_database_hash):
