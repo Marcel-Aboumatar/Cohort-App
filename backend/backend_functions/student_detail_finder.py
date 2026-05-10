@@ -1,6 +1,6 @@
 import asyncio
-from playwright.async_api import async_playwright, Cookie
-
+from playwright.async_api import async_playwright, Cookie, Playwright
+p = Playwright
 async def day_to_matrix_converter(day_string: str):
     splitted_string = "".join(" " + c if c.isupper() else c for c in day_string).strip()
     splitted_string = splitted_string.split()
@@ -57,7 +57,7 @@ async def course_output_formatter(page1, i):
     return {"status":status, "code":code, "name":name, "credits":credits,  "location_list":location_list, "course_sections":course_sections, "instructor":instructor}
 
 
-async def main():
+async def scraper_main(cookies):
     async with async_playwright() as p:
         headed_browser = await p.chromium.launch(headless=False)
         current_context = await headed_browser.new_context()
@@ -90,5 +90,25 @@ async def main():
             outputs.append(dict_values)
         return outputs
     
-def run_playwright():
-    return asyncio.run(main())
+async def authenticator_main(username, password):
+    p = await async_playwright().start()
+    browser_instance = await p.chromium.launch()
+    current_context = await browser_instance.new_context()
+    page = await current_context.new_page()
+    page.set_default_timeout(0)
+    await page.goto("https://colleague-ss.uoguelph.ca/Student")
+    await page.wait_for_url("https://login.microsoftonline.com/**")
+    await page.get_by_role("textbox").fill(username)
+    await page.get_by_role("button", name="Next").click()
+    await page.wait_for_load_state("domcontentloaded")
+    await page.get_by_role("textbox").fill(username)
+    await page.get_by_role("button", name="Sign in").click()
+    code = await page.get_by_role("generic", name="Open your Authenticator app and approve the request. Enter the number if prompted.").inner_text()
+    
+    return code
+
+def run_webadvisor_scraper(cookies):
+    return asyncio.run(scraper_main(cookies))
+
+def run_authenticator_assistant(username: str, password: str) -> str:
+    return asyncio.run(authenticator_main(username, password))
