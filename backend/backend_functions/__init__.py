@@ -1,4 +1,4 @@
-from .create_user import add_user_to_database
+from .create_user import create_user
 from .delete_user import delete_user
 from .friend_request import send_friend_request, accept_friend_request, decline_friend_request, remove_friend, get_all_friends, get_all_friend_requests
 from .login_user import login_user
