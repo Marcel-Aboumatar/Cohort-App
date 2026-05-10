@@ -6,7 +6,12 @@ class Status(Enum):
     INVALID_EMAIL = 2
     INVALID_PASSWORD = 3
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     EMAIL_ALREADY_EXISTS = 4
+=======
+    EMAIL_ALREADY_EXISTS = 4
+    
+>>>>>>> Stashed changes
 =======
     EMAIL_ALREADY_EXISTS = 4
     

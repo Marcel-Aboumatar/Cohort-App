@@ -37,7 +37,11 @@ def login_user(email:str, password:str):
             client.close()
             print("login succesful")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             return Status.SUCCESS
+=======
+            return Status.SUCCESS,  
+>>>>>>> Stashed changes
 =======
             return Status.SUCCESS,  
 >>>>>>> Stashed changes

@@ -9,7 +9,11 @@ import hashlib
 import random
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 from status_enums import Status
+=======
+from .status_enums import Status
+>>>>>>> Stashed changes
 =======
 from .status_enums import Status
 >>>>>>> Stashed changes
@@ -147,8 +151,11 @@ def remove_friend(email_user:str, email_friend:str):
 
     client.close()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     return Status.SUCCESS
 =======
+=======
+>>>>>>> Stashed changes
     return Status.SUCCESS
 
 def get_all_friends(email:str):
@@ -189,5 +196,9 @@ def get_all_friend_requests(email:str):
         return Status.INVALID_EMAIL, None
 
     client.close()
+<<<<<<< Updated upstream
+    return Status.SUCCESS, user.get("incoming_friend_requests")
+>>>>>>> Stashed changes
+=======
     return Status.SUCCESS, user.get("incoming_friend_requests")
 >>>>>>> Stashed changes
