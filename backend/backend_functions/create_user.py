@@ -9,7 +9,11 @@ import hashlib
 import random
 import string
 
+<<<<<<< Updated upstream
 from status_enums import Status
+=======
+from .status_enums import Status
+>>>>>>> Stashed changes
 
 #takes a username and a password as strings
 #if the username is unique it adds it to the database and returns 1

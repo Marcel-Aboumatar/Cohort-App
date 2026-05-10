@@ -8,7 +8,11 @@ import os
 import hashlib
 import random
 
+<<<<<<< Updated upstream
 from status_enums import Status
+=======
+from .status_enums import Status
+>>>>>>> Stashed changes
 
 def send_friend_request(email_sender:str, email_receiver:str):
     #load the database
@@ -142,4 +146,48 @@ def remove_friend(email_user:str, email_friend:str):
     )
 
     client.close()
+<<<<<<< Updated upstream
     return Status.SUCCESS
+=======
+    return Status.SUCCESS
+
+def get_all_friends(email:str):
+    #load the database
+    load_dotenv()
+    DATABASE_URI = os.getenv("DATABASE_URI")
+
+    client = MongoClient(DATABASE_URI, server_api=ServerApi('1'))
+    database = client["user_database"]
+    collection = database["users"]
+
+    user = collection.find_one(
+        {"email": email}, 
+    )
+
+    if user is None:
+        client.close()
+        return Status.INVALID_EMAIL, None
+
+    client.close()
+    return Status.SUCCESS, user.get("friends")
+
+def get_all_friend_requests(email:str):
+    #load the database
+    load_dotenv()
+    DATABASE_URI = os.getenv("DATABASE_URI")
+
+    client = MongoClient(DATABASE_URI, server_api=ServerApi('1'))
+    database = client["user_database"]
+    collection = database["users"]
+
+    user = collection.find_one(
+        {"email": email}, 
+    )
+
+    if user is None:
+        client.close()
+        return Status.INVALID_EMAIL, None
+
+    client.close()
+    return Status.SUCCESS, user.get("incoming_friend_requests")
+>>>>>>> Stashed changes

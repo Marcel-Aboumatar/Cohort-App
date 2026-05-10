@@ -36,7 +36,11 @@ def login_user(email:str, password:str):
         if password_inputed_hash == password_in_database_hash:
             client.close()
             print("login succesful")
+<<<<<<< Updated upstream
             return Status.SUCCESS
+=======
+            return Status.SUCCESS,  
+>>>>>>> Stashed changes
         else: 
             client.close()
             print("password is incorrect")

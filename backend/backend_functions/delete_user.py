@@ -8,7 +8,11 @@ import os
 import hashlib
 import random
 
+<<<<<<< Updated upstream
 from status_enums import Status
+=======
+from .status_enums import Status
+>>>>>>> Stashed changes
 
 def delete_user(email:str):
     #load the database
