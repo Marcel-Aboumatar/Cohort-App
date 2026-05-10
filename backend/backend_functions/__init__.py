@@ -4,3 +4,4 @@ from .friend_request import send_friend_request, accept_friend_request, decline_
 from .login_user import login_user
 from .query_user import query_user, query_private_user
 from .update_user import update_user
+from.find_shared_classes import find_friends_in_shared_class

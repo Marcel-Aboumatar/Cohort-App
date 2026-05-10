@@ -1,28 +1,22 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, session, jsonify, render_template
 from flask_cors import CORS
 
 import backend_functions as f
-#from backend.backend_functions import login_user, create_user, query_user, query_private_user
-
 from backend_functions.status_enums import Status
+
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 CORS(app)
 
+load_dotenv()
+app.secret_key = os.getenv("SECRET_KEY")
+
 #=========================for testing=======================#
 @app.route("/")
 def home():
-    return render_template("home.html")
-
-@app.route("/signup_form")
-def signup_form():
-    return render_template("signup.html")
-
-@app.route("/login_form")
-def login_form():
-    return render_template("login.html")
-#=========================for testing=======================#
-
+    return "HOME"
 
 #inputs: username, password
 #returns: 
@@ -50,6 +44,8 @@ def signup():
             "success": False,
             "error": "account with this email already exists"
         }), 409
+
+    session["email"] = email
 
     return jsonify({
         "success": True,
@@ -81,14 +77,22 @@ def login():
             "error": "Password Is Incorrect"
         }), 409
 
+    session["email"] = email
+
     return jsonify({
         "success": True,
     }), 200
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return jsonify({
+        "success": True,
+    }), 200
 
 @app.route("/delete_user", methods=["POST"])
 def delete_user():
-    email = request.form.get("email")
+    email = session.get("email")
 
     if email is None:
         return jsonify({
@@ -104,7 +108,7 @@ def delete_user():
 
 @app.route("/get_user_info", methods=["POST"])
 def get_user_info():
-    email = request.form.get("email")
+    email = session.get("email")
 
     if email is None:
         return jsonify({
@@ -152,7 +156,7 @@ def get_private_user_info():
 @app.route("/send_friend_request", methods=["POST"])
 def send_friend_request():
 
-    email_sender = request.form.get("email_sender")
+    email_sender = session.get("email")
     email_receiver = request.form.get("email_receiver")
 
     if email_sender is None or email_receiver is None:
@@ -177,7 +181,7 @@ def send_friend_request():
 def accept_friend_request():
 
     email_sender = request.form.get("email_sender")
-    email_receiver = request.form.get("email_receiver")
+    email_receiver = session.get("email")
 
     if email_sender is None or email_receiver is None:
         return jsonify({
@@ -201,7 +205,7 @@ def accept_friend_request():
 def decline_friend_request():
 
     email_sender = request.form.get("email_sender")
-    email_receiver = request.form.get("email_receiver")
+    email_receiver = session.get("email")
 
     if email_sender is None or email_receiver is None:
         return jsonify({
@@ -224,7 +228,7 @@ def decline_friend_request():
 @app.route("/remove_friend", methods=["POST"])
 def remove_friend():
 
-    email_user = request.form.get("email_user")
+    email_user = session.get("email")
     email_friend = request.form.get("email_friend")
 
     if email_user is None or email_friend is None:
@@ -248,7 +252,7 @@ def remove_friend():
 @app.route("/update_user", methods=["POST"])
 def update_user():
 
-    email = request.form.get("email")
+    email = session.get("email")
     new_username = request.form.get("new_username")
     new_major = request.form.get("new_major")
     new_age = request.form.get("new_age")
@@ -270,7 +274,7 @@ def update_user():
 @app.route("/get_all_friends", methods=["POST"])
 def get_all_friends():
 
-    email = request.form.get("email")
+    email = session.get("email")
 
     if email is None:
         return jsonify({
@@ -294,7 +298,7 @@ def get_all_friends():
 @app.route("/get_all_friend_requests", methods=["POST"])
 def get_all_friend_requests():
 
-    email = request.form.get("email")
+    email = session.get("email")
 
     if email is None:
         return jsonify({
@@ -315,6 +319,48 @@ def get_all_friend_requests():
         "friends": friend_requests
     }), 200
 
+@app.route("/get_all_friends_in_class", methods=["POST"])
+def get_all_friends_in_class():
+
+    email = session.get("email")
+
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result, friend_requests = f.get_all_friends_in_class(email)
+    
+    if result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Error"
+        }), 409
+
+    return jsonify({
+        "success": True,
+        "friends": friend_requests
+    }), 200
+
+@app.route("/find_friends_in_shared_class", methods=["POST"])
+def find_friends_in_shared_class():
+
+    email = session.get("email")
+    classname = request.form.get("classname")
+
+    if email is None or classname is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    friends = f.find_friends_in_shared_class(email, classname)
+    
+    return jsonify({
+        "success": True,
+        "friends": friends
+    }), 200
 
 
 if __name__ == "__main__":
