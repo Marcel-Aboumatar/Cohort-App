@@ -8,7 +8,7 @@ import os
 import hashlib
 import random
 
-from status_enums import Status
+from .status_enums import Status
 
 def query_user(email:str):
     #load the database

@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 
-import backend.backend_functions as f
+import backend_functions as f
 #from backend.backend_functions import login_user, create_user, query_user, query_private_user
 
-from backend.backend_functions.status_enums import Status
+from backend_functions.status_enums import Status
 
 app = Flask(__name__)
 CORS(app)
@@ -265,6 +265,57 @@ def update_user():
     return jsonify({
         "success": True,
     }), 200
+
+
+@app.route("/get_all_friends", methods=["POST"])
+def get_all_friends():
+
+    email = request.form.get("email")
+
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result, friends = f.get_all_friends(email)
+    
+    if result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Error"
+        }), 409
+
+    return jsonify({
+        "success": True,
+        "friends": friends
+    }), 200
+
+@app.route("/get_all_friend_requests", methods=["POST"])
+def get_all_friend_requests():
+
+    email = request.form.get("email")
+
+    if email is None:
+        return jsonify({
+            "success": False,
+            "error": "Missing field"
+        }), 400
+    
+    result, friend_requests = f.get_all_friend_requests(email)
+    
+    if result == Status.INVALID_EMAIL:
+        return jsonify({
+            "success": False,
+            "error": "Account Error"
+        }), 409
+
+    return jsonify({
+        "success": True,
+        "friends": friend_requests
+    }), 200
+
+
 
 if __name__ == "__main__":
     app.run(host="localhost", port=8001, debug=True)

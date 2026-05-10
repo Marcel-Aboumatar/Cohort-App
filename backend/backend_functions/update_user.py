@@ -8,7 +8,7 @@ import os
 import hashlib
 import random
 
-from status_enums import Status
+from .status_enums import Status
 
 def update_user(email:str, new_username, new_major, new_age, new_private_bool):
     #load the database

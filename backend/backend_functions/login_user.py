@@ -8,7 +8,7 @@ import os
 import hashlib
 import random
 
-from status_enums import Status
+from .status_enums import Status
 
 
 #takes a email and a password as strings
@@ -36,7 +36,7 @@ def login_user(email:str, password:str):
         if password_inputed_hash == password_in_database_hash:
             client.close()
             print("login succesful")
-            return Status.SUCCESS
+            return Status.SUCCESS,  
         else: 
             client.close()
             print("password is incorrect")
